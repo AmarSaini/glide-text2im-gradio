@@ -54,6 +54,14 @@ model_up.to(device)
 model_up.load_state_dict(load_checkpoint('upsample-inpaint', device))
 print('total upsampler parameters', sum(x.numel() for x in model_up.parameters()))
 
+# Sampling parameters
+batch_size = 1
+guidance_scale = 5.0
+
+# Tune this parameter to control the sharpness of 256x256 images.
+# A value of 1.0 is sharper, but sometimes results in grainy artifacts.
+upsample_temp = 0.997
+
 # Create an classifier-free guidance sampling function
 def model_fn(x_t, ts, **kwargs):
     half = x_t[: len(x_t) // 2]
@@ -93,14 +101,6 @@ model_kwargs = dict()
 def inpaint(input_img, input_img_with_mask, prompt):
     
     print(prompt)
-    
-    # Sampling parameters
-    batch_size = 1
-    guidance_scale = 5.0
-
-    # Tune this parameter to control the sharpness of 256x256 images.
-    # A value of 1.0 is sharper, but sometimes results in grainy artifacts.
-    upsample_temp = 0.997
     
     # Save as png for later mask detection :)
     input_img_256 = input_img.convert('RGB').resize((256, 256), resample=Image.BICUBIC)
